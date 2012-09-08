@@ -1,0 +1,30 @@
+{
+  "name": "read-stream",
+  "version": "0.0.1",
+  "description": "Base class for readable streams",
+  "keywords": [],
+  "author": "Raynos <raynos2@gmail.com>",
+  "repository": "git://github.com/Raynos/read-stream.git",
+  "main": "index",
+  "homepage": "https://github.com/Raynos/read-stream",
+  "contributors": [
+    {
+      "name": "Jake Verbaten"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/Raynos/read-stream/issues",
+    "email": "raynos2@gmail.com"
+  },
+  "dependencies": {
+    "readable-stream": "0.0.1"
+  },
+  "devDependencies": {},
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://github.com/Raynos/read-stream/raw/master/LICENSE"
+    }
+  ],
+  "scripts": {}
+}
