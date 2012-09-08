@@ -25,8 +25,6 @@ function from(read) {
     stream.read = handleRead
     stream.end = end
 
-    stream.once("end", setReadable)
-
     return stream
 
     function readArray(bytes) {
@@ -49,10 +47,6 @@ function from(read) {
     function end() {
         ended = true
         stream.emit("end")
-    }
-
-    function setReadable() {
-        ended = true
         stream.readable = false
     }
 }
