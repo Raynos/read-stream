@@ -2,15 +2,31 @@
 
 Base class for readable streams
 
-## Example
+## Example array
 
 ```
 var from = require("read-stream")
-    , to = require("write-stream")
+    , stream = from(["one", "two"])
 
-from([1,2,3,4]).pipe(to([], function (array) {
-    assert.equal(array, [1,2,3,4])
-}))
+stream.pipe(process.stdout)
+```
+
+## Example function
+
+```
+var from = require("read-stream")
+    // buffer is a shared array amongst all read calls
+    , stream = from(function read(bytes, buffer) {
+        var count = buffer.count = ++buffer.count || 0
+
+        if (count < 5) {
+            return count.toString()    
+        } else {
+            this.emit("end")
+        }
+    })
+
+stream.pipe(process.stdout)
 ```
 
 ## Installation

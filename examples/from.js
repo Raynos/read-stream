@@ -45,3 +45,15 @@ var three = from(function (bytes, buffer) {
 })
 
 three.pipe(output)
+
+from(["one", "two"]).pipe(output)
+
+from(function read(bytes, buffer) {
+    var count = buffer.count = ++buffer.count || 0
+
+    if (count < 5) {
+        return count.toString()
+    } else {
+        this.emit("end")
+    }
+}).pipe(output)

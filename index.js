@@ -1,16 +1,12 @@
-'use strict';
+"use strict";
 
-var Stream = require('readable-stream')
+var Stream = require("readable-stream")
 
-// from
-//
-// a stream that reads from an source.
-// source may be an array, or a function.
-// from handles pause behaviour for you.
+from.end = defaultEnd
 
 module.exports = from
 
-function from(read) {
+function from(read, end) {
     if (Array.isArray(read)) {
         return from(readArray)
     }
@@ -19,11 +15,13 @@ function from(read) {
         , ended = false
         , buffer = []
 
+    end = end || defaultEnd
+
     stream.readable = true
     stream.writable = false
 
     stream.read = handleRead
-    stream.end = end
+    stream.end = handleEnd
 
     return stream
 
@@ -44,9 +42,16 @@ function from(read) {
         return result === undefined ? null : result
     }
 
-    function end() {
+    function handleEnd() {
+        if (ended) {
+            return
+        }
         ended = true
-        stream.emit("end")
+        end.call(stream)
         stream.readable = false
     }
+}
+
+function defaultEnd() {
+    this.emit("end")
 }
