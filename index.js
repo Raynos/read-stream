@@ -6,16 +6,21 @@ from.end = defaultEnd
 
 module.exports = from
 
-function from(read, end) {
+function from(read, end, state) {
     if (Array.isArray(read)) {
         return from(readArray)
     }
 
+    if (typeof end !== "function") {
+        state = end
+        end = null
+    }
+
     var stream = new Stream()
         , ended = false
-        , buffer = []
 
     end = end || defaultEnd
+    state = state || []
 
     stream.readable = true
     stream.writable = false
@@ -37,7 +42,7 @@ function from(read, end) {
         if (ended) {
             return null
         }
-        var result = read.call(stream, bytes, buffer)
+        var result = read.call(stream, bytes, state)
 
         return result === undefined ? null : result
     }

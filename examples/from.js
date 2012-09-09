@@ -48,12 +48,10 @@ three.pipe(output)
 
 from(["one", "two"]).pipe(output)
 
-from(function read(bytes, buffer) {
-    var count = buffer.count = ++buffer.count || 0
-
-    if (count < 5) {
-        return count.toString()
+from(function read(bytes, state) {
+    if (++state.count < 5) {
+        return state.count.toString()
     } else {
         this.emit("end")
     }
-}).pipe(output)
+}, { count: 0 }).pipe(output)
