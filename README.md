@@ -16,15 +16,15 @@ stream.pipe(process.stdout)
 ```
 var from = require("read-stream")
     // buffer is a shared array amongst all read calls
-    , stream = from(function read(bytes, buffer) {
-        var count = buffer.count = ++buffer.count || 0
+    , stream = from(function read(bytes, state) {
+        var count = ++state.count
 
         if (count < 5) {
             return count.toString()    
         } else {
             this.emit("end")
         }
-    })
+    }, { count: 0 })
 
 stream.pipe(process.stdout)
 ```
