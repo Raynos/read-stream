@@ -2,6 +2,7 @@
 
 var Stream = require("readable-stream")
 
+from.read = defaultRead
 from.end = defaultEnd
 
 module.exports = from
@@ -59,4 +60,8 @@ function from(read, end, state) {
 
 function defaultEnd() {
     this.emit("end")
+}
+
+function defaultRead(bytes, buffer) {
+    return buffer.shift()
 }
