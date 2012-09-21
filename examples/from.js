@@ -1,4 +1,5 @@
-var from = require("..")
+var ReadStream = require("..")
+    , fromArray = require("../array")
     , Stream = require("stream")
     , output = new Stream()
 
@@ -11,47 +12,35 @@ output.end = function () {
     console.log("ended")
 }
 
-var one = from([1,2,3,4])
+//console.log("one")
+var one = fromArray([1,2,3,4])
 
 one.pipe(output)
 
-var two = from(function (bytes, buffer) {
-    var item = buffer.push(0)
+//console.log("two")
+var two = ReadStream(function (bytes, state) {
+    var item = ++state.count
     if (item < 5) {
         return item
     }
-    this.emit("end")
-})
+    this.end()
+}, { count: 0 })
 
-two.pipe(output)
+two.stream.pipe(output)
 
-var three = from(function (bytes, buffer) {
-    var chunk = buffer.shift()
-        , stream = this
+var three = ReadStream()
+    , threeCount = 0
 
-    if (chunk !== undefined && chunk < 5) {
-        return chunk
-    } else if (chunk >= 5) {
-        this.emit("end")
+var timer = setInterval(function () {
+    threeCount++
+    if (threeCount < 5) {
+        three.push(threeCount)
     } else {
-        setTimeout(function () {
-            // We need to generate a new number on each setTimeout
-            // Do this by keeping a running counter on the buffer
-            var count = buffer.count = ++buffer.count || 1
-            buffer.push(count)
-            stream.emit("readable")
-        }, 500)
+        clearInterval(timer)
+        three.end()
     }
-})
+}, 500)
 
-three.pipe(output)
+three.stream.pipe(output)
 
-from(["one", "two"]).pipe(output)
-
-from(function read(bytes, state) {
-    if (++state.count < 5) {
-        return state.count.toString()
-    } else {
-        this.emit("end")
-    }
-}, { count: 0 }).pipe(output)
+fromArray(["one", "two"]).pipe(output)

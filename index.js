@@ -1,49 +1,41 @@
-"use strict";
-
 var Stream = require("readable-stream")
+    , extend = require("xtend")
+    , Queue = require("./lib/queue")
 
-from.read = defaultRead
-from.end = defaultEnd
+ReadStream.read = defaultRead
+ReadStream.end = defaultEnd
 
-module.exports = from
+module.exports = ReadStream
 
-function from(read, end, state) {
-    if (Array.isArray(read)) {
-        return from(readArray)
-    }
+ReadStream.fromArray = require("./array")
 
+function ReadStream(read, end, state) {
     if (typeof end !== "function") {
         state = end
         end = null
     }
 
+    read = read || defaultRead
+    end = end || defaultEnd
+
     var stream = new Stream()
         , ended = false
+        , queue = Queue(stream)
 
-    end = end || defaultEnd
-    state = state || []
-
-    stream.readable = true
-    stream.writable = false
+    extend(queue, state || {})
 
     stream.read = handleRead
     stream.end = handleEnd
+    queue.stream = stream
 
-    return stream
-
-    function readArray(bytes) {
-        if (read.length) {
-            return read.shift()
-        } else {
-            this.emit("end")
-        }
-    }
+    return queue
 
     function handleRead(bytes) {
         if (ended) {
             return null
         }
-        var result = read.call(stream, bytes, state)
+
+        var result = read.call(stream, bytes, queue)
 
         return result === undefined ? null : result
     }
@@ -52,9 +44,9 @@ function from(read, end, state) {
         if (ended) {
             return
         }
+
         ended = true
         end.call(stream)
-        stream.readable = false
     }
 }
 
@@ -62,6 +54,6 @@ function defaultEnd() {
     this.emit("end")
 }
 
-function defaultRead(bytes, buffer) {
-    return buffer.shift()
+function defaultRead(bytes, queue) {
+    return queue.shift()
 }
