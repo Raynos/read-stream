@@ -17,15 +17,15 @@ stream.pipe(process.stdout)
 var ReadStream = require("read-stream")
     // state is a shared object among all reads whose initial
     // value is set to be  { count: 0 }
-    , stream = ReadStream(function read(bytes, state) {
-        var count = ++state.count
+    , stream = ReadStream(function read(bytes, queue) {
+        var count = ++queue.count
 
         if (count < 5) {
             return count.toString()
-        } else {
-            process.nextTick(this.end)
         }
-    }, { count: 0 })
+
+        queue.end()
+    }, { count: 0 }).stream
 
 stream.pipe(process.stdout)
 ```
@@ -44,7 +44,7 @@ var timer = setInterval(function () {
         queue.push(count.toString())
     } else {
         clearInterval(timer)
-        process.nextTick(this.end)
+        queue.end()
     }
 }, 500)
 
