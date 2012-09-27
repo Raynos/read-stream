@@ -23,7 +23,7 @@ var two = ReadStream(function (bytes, state) {
     if (item < 5) {
         return item
     }
-    this.end()
+    state.end()
 }, { count: 0 })
 
 two.stream.pipe(output)
