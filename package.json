@@ -1,6 +1,6 @@
 {
   "name": "read-stream",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "description": "Base class for readable streams",
   "keywords": [],
   "author": "Raynos <raynos2@gmail.com>",
