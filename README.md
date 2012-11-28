@@ -58,7 +58,7 @@ stream.pipe(process.stdout)
 ## Example callback
 
 ```js
-var from = require("read-stream/callback")
+var callback = require("read-stream/callback")
 
 var stream = callback(function (cb) {
     fs.readFile(someUri, cb)
