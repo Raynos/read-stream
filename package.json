@@ -1,6 +1,6 @@
 {
   "name": "read-stream",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Base class for readable streams",
   "keywords": [],
   "author": "Raynos <raynos2@gmail.com>",
@@ -17,7 +17,7 @@
     "email": "raynos2@gmail.com"
   },
   "dependencies": {
-    "readable-stream": "~0.0.3",
+    "readable-stream": "~0.0.4",
     "xtend": "~1.0.3"
   },
   "devDependencies": {},
