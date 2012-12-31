@@ -6,7 +6,7 @@ function from(generator) {
     var queue = ReadStream()
         , stream = queue.stream
 
-    generator.call(queue, queue.push, end)
+    generator.call(stream, queue.push, end)
 
     return stream
 

@@ -1,46 +1,31 @@
-var ReadStream = require("..")
-    , fromArray = require("../array")
-    , Stream = require("stream")
-    , output = new Stream()
+var assert = require("assert")
+    , setInterval = require("timers").setInterval
+    , clearInterval = require("timers").clearInterval
 
-output.write = function (chunk) {
-    console.log(chunk)
-    return true
+    , from = require("../from")
+    , createStream = require("./util/createStream")
+
+    , list = []
+    , output = createStream(list)
+
+from(function (push, end) {
+    var count = 0
+
+    var timer = setInterval(function () {
+        count++
+        if (count < 5) {
+            push(count)
+        } else {
+            clearInterval(timer)
+            end()
+            this.once("end", check)
+        }
+    }.bind(this), 500)
+}).pipe(output)
+
+function check() {
+    assert.deepEqual(
+        [1, 2, 3, 4, "ended"]
+        , list
+    )
 }
-
-output.end = function () {
-    console.log("ended")
-}
-
-//console.log("one")
-var one = fromArray([1,2,3,4])
-
-one.pipe(output)
-
-//console.log("two")
-var two = ReadStream(function (bytes, state) {
-    var item = ++state.count
-    if (item < 5) {
-        return item
-    }
-    state.end()
-}, { count: 0 })
-
-two.stream.pipe(output)
-
-var three = ReadStream()
-    , threeCount = 0
-
-var timer = setInterval(function () {
-    threeCount++
-    if (threeCount < 5) {
-        three.push(threeCount)
-    } else {
-        clearInterval(timer)
-        three.end()
-    }
-}, 500)
-
-three.stream.pipe(output)
-
-fromArray(["one", "two"]).pipe(output)
