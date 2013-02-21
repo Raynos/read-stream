@@ -36,7 +36,7 @@ var stream = ReadStream({
 ```
 
 If the source emits some kind of `EOF` you should call `push(null)`
-and if the source emits some kind of error you can just `push(err)`
+and if the source emits some kind of error you can just `emit("error", err)`
 
 ```js
 var ReadStream = require("read-stream")
@@ -59,7 +59,7 @@ socket.onend = function () {
 }
 
 socket.onerror = function (err) {
-    stream.push(err)
+    stream.emit("error", err)
 }
 
 stream.pipe(process.stdout)
@@ -89,7 +89,7 @@ is below the `highWaterMark` after read removes an item then
 `onread` will be called again.
 
 Note that it the underlying source returns an `err` or returns
-an `EOF` you should `push(err)` and `push(null)` respectively.
+an `EOF` you should `emit("error", err)` and `push(null)` respectively.
 
 ```js
 var ReadStream = require("read-stream")
@@ -97,7 +97,11 @@ var ReadStream = require("read-stream")
 var source = db.cursor(...)
 var stream = ReadStream(function onread(push, cb) {
     cursor.nextObject(function (err, item) {
-        push(err || item || null)
+        if (err) {
+            return stream.emit("error", err)
+        }
+
+        push(item || null)
     })
 })
 

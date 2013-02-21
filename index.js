@@ -29,6 +29,7 @@ function ReadStream(options, onread) {
     stream._read = handleRead
     stream.push = push
     stream.once("end", onend)
+    stream.once("error", onerror)
 
     if (onread) {
         stream.on("read", onread)
@@ -95,10 +96,7 @@ function ReadStream(options, onread) {
 
         var state = stream._readableState
 
-        if (chunk instanceof Error) {
-            ended = true
-            return stream.emit("error", chunk)
-        } else if (chunk === null) {
+        if (chunk === null) {
             ended = true
             _push.call(stream, chunk)
             return false
@@ -112,5 +110,13 @@ function ReadStream(options, onread) {
 
     function onend() {
         ended = true
+    }
+
+    function onerror(err) {
+        ended = true
+
+        if (stream.listeners("error").length === 0) {
+            stream.emit("error", err)
+        }
     }
 }

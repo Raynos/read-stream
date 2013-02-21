@@ -27,7 +27,11 @@ test("pull stream (backpressure)", function (assert) {
         source.nextObject(consume)
 
         function consume(err, item) {
-            push(err || item)
+            if (err) {
+                return cb(err)
+            }
+
+            push(item)
         }
     })
     var state = s._readableState

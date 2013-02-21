@@ -124,24 +124,6 @@ test("emits read", function (assert) {
     assert.end()
 })
 
-test("pushing Error is an error", function (assert) {
-    var s = ReadStream()
-    var count = 0
-
-    s.once("error", function (err) {
-        assert.equal(err.message, "some error")
-        assert.equal(count, 1)
-        count++
-    })
-
-    count++
-
-    s.push(new Error("some error"))
-
-    assert.equal(count, 2)
-    assert.end()
-})
-
 test("pushing after end drops the data", function (assert) {
     var s = ReadStream()
 
@@ -245,7 +227,7 @@ test("stream considered ended after error", function (assert) {
         assert.equal(err.message, "foo")
     })
 
-    s.push(Error("foo"))
+    s.emit("error", Error("foo"))
 
     count++
 
