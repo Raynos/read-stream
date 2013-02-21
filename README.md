@@ -1,5 +1,9 @@
 # read-stream
 
+[![build status][1]][2] [![dependency status][3]][4]
+
+[![browser support][5]][6]
+
 Base class for readable streams
 
 This should be used for object streams only.
@@ -136,3 +140,10 @@ stream.pipe(process.stdout)
  - Raynos
 
 ## MIT Licenced
+
+  [1]: https://secure.travis-ci.org/Raynos/read-stream.png
+  [2]: http://travis-ci.org/Raynos/read-stream
+  [3]: http://david-dm.org/Raynos/read-stream.png
+  [4]: http://david-dm.org/Raynos/read-stream
+  [5]: http://ci.testling.com/Raynos/read-stream.png
+  [6]: http://ci.testling.com/Raynos/read-stream
