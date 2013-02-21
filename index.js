@@ -1,35 +1,116 @@
-var Stream = require("readable-stream")
-    , extend = require("xtend")
-    , Queue = require("./lib/queue")
+var Readable = require("readable-stream/readable")
 
-ReadStream.read = defaultRead
+var slice = Array.prototype.slice
 
 module.exports = ReadStream
 
-ReadStream.from = require("./from")
-ReadStream.callback = require("./callback")
-ReadStream.fromArray = require("./array")
-
-function ReadStream(read, state) {
-    read = read || defaultRead
-
-    var stream = new Stream()
-        , queue = Queue(stream)
-
-    extend(queue, state || {})
-
-    stream.read = handleRead
-    queue.stream = stream
-
-    return queue
-
-    function handleRead(bytes) {
-        var result = read.call(stream, bytes, queue)
-
-        return result === undefined ? null : result
+function ReadStream(options, onread) {
+    if (typeof options === "function") {
+        onread = options
+        options = null
     }
-}
 
-function defaultRead(bytes, queue) {
-    return queue.shift()
+    if (!options) {
+        options = {}
+    }
+
+    if (!options.objectMode) {
+        options.objectMode = true
+    }
+
+    if (options.highWaterMark === undefined) {
+        options.highWaterMark = 100
+    }
+
+    var ended = false
+    var stream = new Readable(options)
+    var _push = stream.push
+
+    stream._read = handleRead
+    stream.push = push
+    stream.once("end", onend)
+
+    if (onread) {
+        stream.on("read", onread)
+    }
+
+    return stream
+
+    function handleRead(n, cb) {
+        stream.emit("read", push, callback)
+    }
+
+    function callback(err, result) {
+        if (ended) {
+            return
+        }
+
+        if (err) {
+            ended = true
+            return stream.emit("error", err)
+        }
+
+        if (arguments.length === 2) {
+            push(result)
+        }
+
+        ended = true
+
+        _push.call(stream, null)
+    }
+
+    function push() {
+        if (ended) {
+            return true
+        }
+
+        if (arguments.length === 0) {
+            return _push.call(stream)
+        }
+
+        var chunks = slice.call(arguments)
+        var lastChunk = chunks.pop()
+
+        for (var i = 0; i < chunks.length; i++) {
+            var chunk = chunks[i]
+
+            if (ended) {
+                break
+            }
+
+            addChunk(chunk, true)
+
+            if (chunk === null) {
+                return false
+            }
+        }
+
+        return addChunk(lastChunk)
+    }
+
+    function addChunk(chunk, enqueueChunk) {
+        if (ended) {
+            return
+        }
+
+        var state = stream._readableState
+
+        if (chunk instanceof Error) {
+            ended = true
+            return stream.emit("error", chunk)
+        } else if (chunk === null) {
+            ended = true
+            _push.call(stream, chunk)
+            return false
+        } else if (enqueueChunk) {
+            state.length += 1
+            state.buffer.push(chunk)
+        } else {
+            return _push.call(stream, chunk)
+        }
+    }
+
+    function onend() {
+        ended = true
+    }
 }

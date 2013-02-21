@@ -17,15 +17,22 @@
     "email": "raynos2@gmail.com"
   },
   "dependencies": {
-    "readable-stream": "git://github.com/isaacs/readable-stream.git",
-    "xtend": "~1.0.3"
+    "readable-stream": "git://github.com/Raynos/readable-stream",
+    "process": "~0.5.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "testem": "~0.2.70",
+    "browserify": "~1.18.0",
+    "tape": "~0.2.2"
+  },
   "licenses": [
     {
       "type": "MIT",
       "url": "http://github.com/Raynos/read-stream/raw/master/LICENSE"
     }
   ],
-  "scripts": {}
+  "scripts": {
+    "build": "browserify test/index.js -o test/static/bundle.js",
+    "test": "testem ci"
+  }
 }

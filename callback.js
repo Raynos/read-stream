@@ -1,9 +1,14 @@
-var from = require("./from")
+var ReadStream = require("./index")
 
 module.exports = callback
 
-function callback(generator) {
-    return from(function (_, end) {
-        generator(end)
+function callback(options, generator) {
+    if (typeof options === "function") {
+        generator = options
+        options = null
+    }
+
+    return ReadStream(options, function (push, cb) {
+        generator(cb)
     })
 }

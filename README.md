@@ -2,60 +2,120 @@
 
 Base class for readable streams
 
-## Example queue
+This should be used for object streams only.
+
+## Example push model
+
+A push source can be turned into a `Readable Stream` by creating
+an instance of the source and creating a stream.
+
+When the `onread` listener of the stream get's called it's time
+to start consuming data from the source. (like `source.resume()`
+or `source.readStart()`). Note that `onread` may get called
+multiple times even when the source your wrapping in a stream
+has already started. So `resume()` / `readStart()` should be handle
+being called multiple times.
+
+When you get actual data out of the raw source you should `push(data)`
+into the stream. `push` returns a boolean whether or not the
+stream's buffer is full. If it's full you need to stop reading
+from the source (like `source.pause()` or `source.readStop()`).
+
+`push()` returns false when the internal buffer matches the
+`highWaterMark`. This defaults to `100` for `ReadStream`. You can
+configure it using
+
+```js
+var stream = ReadStream({
+    highWaterMark: 20
+}, function onread() { ... })
+```
+
+If the source emits some kind of `EOF` you should call `push(null)`
+and if the source emits some kind of error you can just `push(err)`
 
 ```js
 var ReadStream = require("read-stream")
-    , queue = ReadStream()
-    , count = 0
 
-var timer = setInterval(function () {
-    count = ++count
+var socket = connect(...)
+var stream = ReadStream(function onread(push, cb) {
+    socket.readStart()
+})
 
-    if (count < 5) {
-        queue.push(count.toString())
-    } else {
-        clearInterval(timer)
-        queue.end()
+socket.ondata = function (chunk) {
+    var needsMore = stream.push(chunk)
+
+    if (!needsMore) {
+        socket.readStop()
     }
-}, 500)
+}
 
-queue.stream.pipe(process.stdout)
-```
+socket.onend = function () {
+    stream.push(null)
+}
 
-## Example array
-
-```js
-var fromArray = require("read-stream").fromArray
-    , stream = fromArray(["one", "two"])
+socket.onerror = function (err) {
+    stream.push(err)
+}
 
 stream.pipe(process.stdout)
 ```
 
-## Example from
+## Example pull model
+
+A pull source can be made into a `Readable Stream` in a way easier
+fashion. Create an instance of the raw pull source and create a
+stream.
+
+When the `onread` listener of the stream is called you should
+pull data out of the underlying source and `push()` it into
+the stream. If you `push()` data into the stream and the underlying
+buffer is below the `lowWaterMark` then `onread` will be called
+again immediately. The `lowWaterMark` can be configured and defaults
+to 0
 
 ```js
-var from = require("read-stream/from")
+var stream = ReadStream({
+    lowWaterMark: 5
+}, function onread() {})
+```
 
-var stream = from(function (push, end) {
-    var cursor = db.cursor(...)
+When a user calls `read()` on the stream and the internal buffer
+is below the `highWaterMark` after read removes an item then
+`onread` will be called again.
 
-    cursor.each(function (err, item) {
-        if (err) {
-            return end(err)
-        }
+Note that it the underlying source returns an `err` or returns
+an `EOF` you should `push(err)` and `push(null)` respectively.
 
-        // This cursor eventually has item === null.
-        // push(null) is the same as end() so it ends the
-        // stream cleanly.
-        push(item)
+```js
+var ReadStream = require("read-stream")
+
+var source = db.cursor(...)
+var stream = ReadStream(function onread(push, cb) {
+    cursor.nextObject(function (err, item) {
+        push(err || item || null)
     })
 })
 
 stream.pipe(process.stdout)
 ```
 
+## Example array
+
+If you want to turn an array into a stream for testing / example
+purposes then use the `array` function.
+
+```js
+var fromArray = require("read-stream/array")
+var stream = fromArray(["one", "two"])
+
+stream.pipe(process.stdout)
+```
+
 ## Example callback
+
+If you want to turn a callback operation into a stream then
+you can use the `callback` function.
 
 ```js
 var callback = require("read-stream/callback")
@@ -66,26 +126,6 @@ var stream = callback(function (cb) {
 
 stream.pipe(process.stdout)
 ```
-
-## Example function (old)
-
-```
-var ReadStream = require("read-stream")
-    // state is a shared object among all reads whose initial
-    // value is set to be  { count: 0 }
-    , stream = ReadStream(function read(bytes, queue) {
-        var count = ++queue.count
-
-        if (count < 5) {
-            return count.toString()
-        }
-
-        queue.end()
-    }, { count: 0 }).stream
-
-stream.pipe(process.stdout)
-```
-
 
 ## Installation
 

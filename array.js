@@ -1,23 +1,13 @@
-var ReadStream = require("./index")
+var Stream = require("./index")
 
 module.exports = fromArray
 
-function fromArray(array) {
-    var queue = ReadStream(readArray)
-        , stream = queue.stream
+function fromArray(arr) {
+    return Stream(function (push) {
+        arr.forEach(function (v) {
+            push(v)
+        })
 
-    return stream
-
-    function readArray(bytes) {
-        if (array.length > 0) {
-            return array.shift()
-        } else if (array.length === 0) {
-            process.nextTick(end)
-            return null
-        }
-    }
-
-    function end() {
-        stream.emit("end")
-    }
+        push(null)
+    })
 }
